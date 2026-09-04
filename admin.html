@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>CampusHire - Admin</title>
+
+<style>
+
+body{
+    font-family:Arial;
+    margin:0;
+    background:#eef2ff;
+}
+
+.box{
+    width:700px;
+    max-width:90%;
+    margin:30px auto;
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 5px 20px #ccc;
+}
+
+input{
+    width:94%;
+    padding:12px;
+    margin:7px;
+}
+
+button{
+    padding:10px 15px;
+    margin:5px;
+    border:0;
+    border-radius:7px;
+    background:#5b5be7;
+    color:white;
+    cursor:pointer;
+}
+
+.red{
+    background:#e74c3c;
+}
+
+.green{
+    background:#16a085;
+}
+
+.card{
+    background:#f5f6ff;
+    padding:20px;
+    margin:15px 0;
+    border-radius:12px;
+}
+
+#dashboard{
+    display:none;
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+<div id="login" class="box">
+
+<h1>👨‍💼 CampusHire</h1>
+
+<h2>Admin Portal</h2>
+
+<input id="user"
+placeholder="Admin Username">
+
+<input id="pass"
+type="password"
+placeholder="Password">
+
+<button onclick="login()">
+Login
+</button>
+
+<p id="msg"></p>
+
+</div>
+
+
+<div id="dashboard">
+
+<div class="box">
+
+<h1>👨‍💼 Admin Dashboard</h1>
+
+<p>Student Placement Applications</p>
+
+<button onclick="loadApplications()">
+🔄 Refresh
+</button>
+
+<button onclick="logout()">
+Logout
+</button>
+
+</div>
+
+
+<div class="box">
+
+<h2>📋 Applications</h2>
+
+<div id="list"></div>
+
+</div>
+
+</div>
+
+
+<script>
+
+let apps =
+JSON.parse(localStorage.getItem("apps")) || [];
+
+
+/* ADMIN LOGIN */
+
+function login(){
+
+let u=document.getElementById("user").value;
+let p=document.getElementById("pass").value;
+
+
+/*
+Demo admin authentication.
+In a real application this would
+be handled securely by a backend.
+*/
+
+if(u==="admin" && p==="1234"){
+
+document.getElementById("login")
+.style.display="none";
+
+document.getElementById("dashboard")
+.style.display="block";
+
+loadApplications();
+
+}
+
+else{
+
+document.getElementById("msg")
+.innerText="❌ Invalid admin credentials.";
+
+}
+
+}
+
+
+/* SHOW APPLICATIONS */
+
+function loadApplications(){
+
+apps=
+JSON.parse(localStorage.getItem("apps")) || [];
+
+let list=document.getElementById("list");
+
+list.innerHTML="";
+
+
+if(apps.length===0){
+
+list.innerHTML=
+"<p>No applications received.</p>";
+
+return;
+
+}
+
+
+apps.forEach((a,i)=>{
+
+let student=
+JSON.parse(localStorage.getItem("students"))
+.find(s=>s.username===a.username);
+
+
+list.innerHTML+=`
+
+<div class="card">
+
+<h2>👨‍🎓 ${a.student}</h2>
+
+<hr>
+
+<p><b>SRN:</b> ${student.srn}</p>
+
+<p><b>Branch:</b> ${student.branch}</p>
+
+<p><b>Year:</b> ${student.year}</p>
+
+<p><b>CGPA:</b> ${student.cgpa}</p>
+
+<p><b>Skills:</b> ${student.skills}</p>
+
+<p>
+<b>📄 Resume:</b>
+${student.resume}
+</p>
+
+<hr>
+
+<p><b>Company:</b> ${a.company}</p>
+
+<p><b>Position:</b> ${a.job}</p>
+
+<p><b>Status:</b> ${a.status}</p>
+
+<button class="green"
+onclick="update(${i},'Eligible')">
+✅ Eligible
+</button>
+
+<button
+onclick="update(${i},'Interview')">
+📅 Send Interview
+</button>
+
+<button class="red"
+onclick="update(${i},'Rejected')">
+❌ Reject
+</button>
+
+</div>
+
+`;
+
+});
+
+}
+
+
+/* UPDATE APPLICATION */
+
+function update(i,status){
+
+apps=
+JSON.parse(localStorage.getItem("apps")) || [];
+
+
+apps[i].status=status;
+
+
+if(status==="Eligible"){
+
+apps[i].message=
+"✅ You are eligible for the next placement round.";
+
+}
+
+
+if(status==="Interview"){
+
+apps[i].message=
+"🎉 ${apps[i].company} has invited you for an interview. Would you like to continue?";
+
+}
+
+
+if(status==="Rejected"){
+
+apps[i].message=
+"❌ Unfortunately, you were not shortlisted.";
+
+}
+
+
+localStorage.setItem(
+"apps",
+JSON.stringify(apps)
+);
+
+loadApplications();
+
+}
+
+
+/* LOGOUT */
+
+function logout(){
+
+document.getElementById("dashboard")
+.style.display="none";
+
+document.getElementById("login")
+.style.display="block";
+
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CampusHire - Student</title>
+
+<style>
+body{
+    font-family:Arial;
+    margin:0;
+    background:linear-gradient(135deg,#667eea,#764ba2);
+}
+.box{
+    width:400px;
+    max-width:90%;
+    margin:40px auto;
+    background:white;
+    padding:25px;
+    border-radius:20px;
+    box-shadow:0 5px 20px #3335;
+}
+input{
+    width:94%;
+    padding:11px;
+    margin:6px 0;
+    border:1px solid #ccc;
+    border-radius:7px;
+}
+button{
+    padding:10px 15px;
+    margin:5px;
+    border:0;
+    border-radius:7px;
+    background:#667eea;
+    color:white;
+    cursor:pointer;
+}
+.card{
+    background:#f5f6ff;
+    padding:15px;
+    margin:12px 0;
+    border-radius:12px;
+}
+h1,h2{text-align:center}
+#app{display:none}
+</style>
+</head>
+
+<body>
+
+<div id="login" class="box">
+
+<h1>🎓 CampusHire</h1>
+<h2>Student Login</h2>
+
+<input id="username" placeholder="Username">
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+<button onclick="register()">New Student</button>
+
+<p id="message"></p>
+
+</div>
+
+
+<div id="register" class="box" style="display:none">
+
+<h2>📝 Student Registration</h2>
+
+<input id="name" placeholder="Full Name">
+<input id="newUser" placeholder="Username">
+<input id="newPass" type="password" placeholder="Password">
+<input id="srn" placeholder="SRN / USN">
+<input id="branch" placeholder="Branch">
+<input id="year" placeholder="Year">
+<input id="cgpa" placeholder="CGPA">
+<input id="skills" placeholder="Skills">
+
+<label>📄 Resume</label>
+<input id="resume" type="file" accept=".pdf">
+
+<button onclick="createAccount()">Register</button>
+<button onclick="showLogin()">Back</button>
+
+<p id="regMessage"></p>
+
+</div>
+
+
+<div id="app">
+
+<div class="box">
+
+<h1>🎓 CampusHire</h1>
+
+<h2 id="welcome"></h2>
+
+<button onclick="profile()">👤 Profile</button>
+<button onclick="companies()">🏢 Companies</button>
+<button onclick="applications()">📋 Applications</button>
+<button onclick="notifications()">🔔 Notifications</button>
+<button onclick="logout()">Logout</button>
+
+</div>
+
+
+<div id="content" class="box"></div>
+
+</div>
+
+
+<script>
+
+let students =
+JSON.parse(localStorage.getItem("students")) || [];
+
+let apps =
+JSON.parse(localStorage.getItem("apps")) || [];
+
+let current = null;
+
+
+/* REGISTER */
+
+function register(){
+
+document.getElementById("login").style.display="none";
+document.getElementById("register").style.display="block";
+
+}
+
+function showLogin(){
+
+document.getElementById("register").style.display="none";
+document.getElementById("login").style.display="block";
+
+}
+
+
+/* CREATE ACCOUNT */
+
+function createAccount(){
+
+let resumeFile =
+document.getElementById("resume").files[0];
+
+let student={
+
+name:document.getElementById("name").value,
+username:document.getElementById("newUser").value,
+password:document.getElementById("newPass").value,
+srn:document.getElementById("srn").value,
+branch:document.getElementById("branch").value,
+year:document.getElementById("year").value,
+cgpa:document.getElementById("cgpa").value,
+skills:document.getElementById("skills").value,
+resume:resumeFile ? resumeFile.name : "No resume uploaded"
+
+};
+
+
+if(!student.name ||
+!student.username ||
+!student.password){
+
+document.getElementById("regMessage")
+.innerText="Please fill the required details.";
+
+return;
+
+}
+
+
+students.push(student);
+
+localStorage.setItem(
+"students",
+JSON.stringify(students)
+);
+
+document.getElementById("regMessage")
+.innerText="✅ Registration successful!";
+
+}
+
+
+/* LOGIN */
+
+function login(){
+
+let u=document.getElementById("username").value;
+let p=document.getElementById("password").value;
+
+current=students.find(
+s=>s.username===u && s.password===p
+);
+
+if(!current){
+
+document.getElementById("message")
+.innerText="❌ Invalid username or password.";
+
+return;
+
+}
+
+document.getElementById("login").style.display="none";
+document.getElementById("app").style.display="block";
+
+document.getElementById("welcome")
+.innerText="Welcome, "+current.name+" 👋";
+
+profile();
+
+}
+
+
+/* PROFILE */
+
+function profile(){
+
+document.getElementById("content").innerHTML=`
+
+<h2>👤 My Profile</h2>
+
+<div class="card">
+<b>Name:</b> ${current.name}<br><br>
+<b>SRN:</b> ${current.srn}<br><br>
+<b>Branch:</b> ${current.branch}<br><br>
+<b>Year:</b> ${current.year}<br><br>
+<b>CGPA:</b> ${current.cgpa}<br><br>
+<b>Skills:</b> ${current.skills}<br><br>
+<b>Resume:</b> 📄 ${current.resume}
+</div>
+
+`;
+
+}
+
+
+/* COMPANIES */
+
+function companies(){
+
+let list=[
+
+["TCS","Software Developer",7],
+["Infosys","Graduate Engineer",7],
+["Wipro","Software Engineer",7],
+["Accenture","Associate Software Engineer",7],
+["IBM","Software Developer",7],
+["Deloitte","Technology Analyst",7],
+["Cognizant","Programmer Analyst",6.5],
+["Capgemini","Software Engineer",6.5],
+["HCLTech","Graduate Engineer",6.5],
+["Tech Mahindra","Software Engineer",6]
+
+];
+
+let html="<h2>🏢 Companies</h2>";
+
+list.forEach(c=>{
+
+html+=`
+
+<div class="card">
+
+<h3>${c[0]}</h3>
+
+<p>💼 ${c[1]}</p>
+
+<p>Minimum CGPA: ${c[2]}</p>
+
+<button onclick="apply('${c[0]}','${c[1]}',${c[2]})">
+Apply
+</button>
+
+</div>
+
+`;
+
+});
+
+document.getElementById("content").innerHTML=html;
+
+}
+
+
+/* APPLY */
+
+function apply(company,job,minCGPA){
+
+if(Number(current.cgpa)<minCGPA){
+
+alert("❌ Your CGPA does not meet the requirement.");
+
+return;
+
+}
+
+let already=apps.some(
+
+a=>a.username===current.username &&
+a.company===company &&
+a.status!=="Declined"
+
+);
+
+if(already){
+
+alert("You already applied.");
+
+return;
+
+}
+
+apps.push({
+
+username:current.username,
+student:current.name,
+company:company,
+job:job,
+status:"Applied",
+message:"Your application is under review."
+
+});
+
+localStorage.setItem(
+"apps",
+JSON.stringify(apps)
+);
+
+alert("✅ Application submitted!");
+
+}
+
+
+/* APPLICATIONS */
+
+function applications(){
+
+let my=apps.filter(
+a=>a.username===current.username
+);
+
+let html="<h2>📋 My Applications</h2>";
+
+if(my.length===0){
+
+html+="<p>No applications yet.</p>";
+
+}
+
+my.forEach((a,i)=>{
+
+html+=`
+
+<div class="card">
+
+<h3>🏢 ${a.company}</h3>
+
+<p>Position: ${a.job}</p>
+
+<p>Status: <b>${a.status}</b></p>
+
+<p>💬 ${a.message}</p>
+
+`;
+
+if(a.status==="Interview"){
+
+html+=`
+
+<button onclick="accept(${i})">
+✅ Continue with Interview
+</button>
+
+<button onclick="decline(${i})">
+❌ Decline
+</button>
+
+`;
+
+}
+
+if(a.status==="Applied" ||
+a.status==="Eligible"){
+
+html+=`
+
+<button onclick="withdraw(${i})">
+Cancel Application
+</button>
+
+`;
+
+}
+
+html+="</div>";
+
+});
+
+document.getElementById("content").innerHTML=html;
+
+}
+
+
+/* ACCEPT */
+
+function accept(i){
+
+let my=apps.filter(
+a=>a.username===current.username
+);
+
+my[i].status="Interview Accepted";
+
+my[i].message=
+"✅ You confirmed the interview.";
+
+localStorage.setItem(
+"apps",
+JSON.stringify(apps)
+);
+
+applications();
+
+}
+
+
+/* DECLINE */
+
+function decline(i){
+
+let my=apps.filter(
+a=>a.username===current.username
+);
+
+my[i].status="Declined";
+
+my[i].message=
+"You declined the interview invitation.";
+
+localStorage.setItem(
+"apps",
+JSON.stringify(apps)
+);
+
+applications();
+
+}
+
+
+/* WITHDRAW */
+
+function withdraw(i){
+
+let my=apps.filter(
+a=>a.username===current.username
+);
+
+my[i].status="Withdrawn";
+
+my[i].message=
+"You cancelled your application.";
+
+localStorage.setItem(
+"apps",
+JSON.stringify(apps)
+);
+
+applications();
+
+}
+
+
+/* NOTIFICATIONS */
+
+function notifications(){
+
+let my=apps.filter(
+a=>a.username===current.username
+);
+
+let html="<h2>🔔 Notifications</h2>";
+
+if(my.length===0){
+
+html+="<p>No notifications.</p>";
+
+}
+
+my.forEach(a=>{
+
+html+=`
+
+<div class="card">
+
+<h3>📢 ${a.company}</h3>
+
+<p>${a.message}</p>
+
+<b>Status: ${a.status}</b>
+
+`;
+
+if(a.status==="Interview"){
+
+html+=`
+
+<br><br>
+
+<button onclick="acceptNotification('${a.company}')">
+✅ Continue
+</button>
+
+<button onclick="declineNotification('${a.company}')">
+❌ Decline
+</button>
+
+`;
+
+}
+
+html+="</div>";
+
+});
+
+document.getElementById("content").innerHTML=html;
+
+}
+
+
+function acceptNotification(company){
+
+let a=apps.find(
+x=>x.username===current.username &&
+x.company===company
+);
+
+a.status="Interview Accepted";
+a.message="✅ You confirmed the interview.";
+
+localStorage.setItem("apps",JSON.stringify(apps));
+
+notifications();
+
+}
+
+
+function declineNotification(company){
+
+let a=apps.find(
+x=>x.username===current.username &&
+x.company===company
+);
+
+a.status="Declined";
+a.message="You declined the interview invitation.";
+
+localStorage.setItem("apps",JSON.stringify(apps));
+
+notifications();
+
+}
+
+
+/* LOGOUT */
+
+function logout(){
+
+current=null;
+
+document.getElementById("app").style.display="none";
+document.getElementById("login").style.display="block";
+
+}
+
+</script>
+
+</body>
+</html>
